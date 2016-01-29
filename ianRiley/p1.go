@@ -74,6 +74,49 @@ func insertList(elementList []int) *Node {
   return tree
 }
 
+func delete(tree *Node, element int) *Node {
+  if tree == nil {
+    return nil
+  }
+  if element < tree.Item {
+    left := delete(tree.Left, element)
+    if left == nil {
+      left = tree.Left
+      tree.Left = nil
+    }
+    return left
+  }
+  if element > tree.Item {
+    right := delete(tree.Right, element)
+    if right == nil {
+      right = tree.Right
+      tree.Right = nil
+    }
+    return right
+  }
+  if tree.Right != nil {
+    tree.Item = tree.Right.Item
+    tree.Right.Item = element
+    right := delete(tree.Right, element)
+    if right == nil {
+      right = tree.Right
+      tree.Right = nil
+    }
+    return right
+  }
+  if tree.Left != nil {
+    tree.Item = tree.Left.Item
+    tree.Left.Item = element
+    left := delete(tree.Left, element)
+    if left == nil {
+      left = tree.Left
+      tree.Left = nil
+    }
+    return left
+  }
+  return nil
+}
+
 func displayBST(tree *Node) {
   println(inOrderTraversal(tree))
 }
@@ -82,8 +125,6 @@ func main() {
   l := [10]int{100, 3, 3, 200, 5, 8, 5, 200, 0, -4}
   
   s := l[:]
-
-  insertList(s)
 
   displayBST(insertList(s))
 
