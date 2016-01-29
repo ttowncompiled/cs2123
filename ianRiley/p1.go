@@ -1,67 +1,93 @@
 package main
 
-import "strconv"
+import (
+  "fmt"
+  "strconv"
+)
 
-type Tree struct {
-  Length int
-  Nodes []int
+type Node struct {
+  Item int
+  Left *Node
+  Right *Node
 }
 
-func Insert(tree *Tree, value int) bool {
-  if tree == nil || tree.Nodes == nil {
-    tree.Nodes = make([]int, 1023, 1023)
+func traversal(tree *Node, order int) string {
+  if tree == nil {
+    return ""
   }
-  tree.Nodes[tree.Length] = value
-  tree.Length++
-  return true
+  left := traversal(tree.Left, order)
+  right := traversal(tree.Right, order)
+  if order < 0 {
+    // pre-order traversal
+    return strconv.Itoa(tree.Item) + " " + left + right
+  }
+  if order > 0 {
+    // post-order traversal
+    return left + right + strconv.Itoa(tree.Item) + " "
+  }
+  // in order traversal
+  return left + strconv.Itoa(tree.Item) + " " + right
 }
 
-func Delete(tree *Tree, value int) bool {
-  if tree == nil || tree.Nodes == nil {
-    return false
+func preOrderTraversal(tree *Node) string {
+  return traversal(tree, -1)
+}
+
+func inOrderTraversal(tree *Node) string {
+  return traversal(tree, 0)
+}
+
+func postOrderTraversal(tree *Node) string {
+  return traversal(tree, 1)
+}
+
+func insert(tree *Node, element int) *Node {
+  if tree == nil {
+    return &Node{element, nil, nil}
   }
-  for i := 0; i < tree.Length; i++ {
-    if tree.Nodes[i] == value {
-      tree.Nodes[i] = tree.Nodes[tree.Length-1]
-      tree.Length--
-      return true
+  if element < tree.Item {
+    if tree.Left == nil {
+      tree.Left = &Node{element, nil, nil}
+      return tree.Left
     }
+    return insert(tree.Left, element)
   }
-  return false
+  if element > tree.Item {
+    if tree.Right == nil {
+      tree.Right = &Node{element, nil, nil}
+      return tree.Right
+    }
+    return insert(tree.Right, element)
+  }
+  // no duplicates
+  return tree
 }
 
-func ToString(tree *Tree, node int) string {
-  if tree == nil || tree.Nodes == nil {
-    return ""
+func insertList(elementList []int) *Node {
+  if len(elementList) == 0 {
+    return nil
   }
-  if node >= tree.Length {
-    return ""
+  tree := insert(nil, elementList[0])
+  for idx := 1; idx < len(elementList); idx++ {
+    insert(tree, elementList[idx])
   }
-  left := ToString(tree, 2 * node + 1)
-  if left != "" {
-    left += ", "
-  }
-  right := ToString(tree, 2 * node + 2)
-  if right != "" {
-    right = ", " + right
-  }
-  return left + strconv.Itoa(tree.Nodes[node]) + right
+  return tree
+}
+
+func displayBST(tree *Node) {
+  println(inOrderTraversal(tree))
 }
 
 func main() {
-  t := &Tree{}
-  Insert(t, 1)
-  Insert(t, 2)
-  Insert(t, 3)
-  Insert(t, 4)
-  Insert(t, 5)
-  Insert(t, 6)
-  Insert(t, 7)
-  println(ToString(t, 0))
-  Delete(t, 7)
-  println(ToString(t, 0))
-  Delete(t, 3)
-  println(ToString(t, 0))
-  Delete(t, 1)
-  println(ToString(t, 0))
+  l := [10]int{100, 3, 3, 200, 5, 8, 5, 200, 0, -4}
+  
+  s := l[:]
+
+  insertList(s)
+
+  displayBST(insertList(s))
+
+  fmt.Println()
 }
+
+// output: -4 0 3 5 8 100 200
