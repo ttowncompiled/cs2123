@@ -53,40 +53,26 @@ func insertList(text []string) (*Node, *Node) {
   if text == nil || len(text) == 0 {
     return nil, nil
   }
+  
   unigram := insert(nil, text[0])
   insert(unigram, text[1])
   bigram := insert(nil, text[0] + " " + text[1])
+  
   for idx := 2; idx < len(text); idx++ {
     insert(unigram, text[idx])
     insert(bigram, text[idx-1] + " " + text[idx])
   }
+  
   return unigram, bigram
 }
 
-func traversal(tree *Node, order int) string {
+func inOrderTraversal(tree *Node) string {
   if tree == nil {
     return ""
   }
-  left := traversal(tree.Left, order)
-  right := traversal(tree.Right, order)
-  if order < 0 {
-    // pre-order traversal
-    return fmt.Sprintf("%s : %d\n", tree.Item, tree.Count) + left + right
-  }
-  if order > 0 {
-    // post-order traversal
-    return left + right + fmt.Sprintf("%s : %d\n", tree.Item, tree.Count)
-  }
-  // in order traversal
+  left := inOrderTraversal(tree.Left)
+  right := inOrderTraversal(tree.Right)
   return left + fmt.Sprintf("%s : %d\n", tree.Item, tree.Count) + right
-}
-
-func inOrderTraversal(tree *Node) string {
-  return traversal(tree, 0)
-}
-
-func displayBST(tree *Node) {
-  fmt.Println(inOrderTraversal(tree))
 }
 
 func processText(filename string) []string {
@@ -95,9 +81,13 @@ func processText(filename string) []string {
   scanner := bufio.NewScanner(reader)
   defer f.Close()
   
-  var text string
+  var text []string
   for scanner.Scan() {
-    text = scanner.Text()
+    if text == nil {
+      text = strings.Split(scanner.Text(), " ")
+    } else {
+      text = append(text, strings.Split(scanner.Text(), " ")...)
+    }
   }
   
   if err := scanner.Err(); err != nil {
@@ -105,7 +95,7 @@ func processText(filename string) []string {
     os.Exit(1)
   }
   
-  return strings.Split(text, " ")
+  return text
 }
 
 func outputUnigram(unigram *Node, filename string) {
