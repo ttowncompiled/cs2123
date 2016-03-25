@@ -1,0 +1,7 @@
+FileName              | Size    | BST_Time  | AVL_Time  |
+=========================================================
+huckleberryFinn       | 116954  | 0m0.773s  | 0m0.806s  |
+tomSawyer             |  76118  | 0m0.658s  | 0m0.699s  |
+innocentAdventuress   |  42634  | 0m0.525s  | 0m0.547s  |
+prodigalVillage       |  31183  | 0m0.485s  | 0m0.487s  |
+muchAdoAboutNothing   |  26247  | 0m0.439s  | 0m0.470s  |
