@@ -40,76 +40,155 @@ func getHeight(node *Node) int {
   return node.HeightRight + 1
 }
 
-func singleRotationToTheRight(grandparent *Node, parent *Node, child *Node) {
-  
+func singleRotationToTheRight(grandparent *Node, parent *Node, child *Node) *Node {
+  grandparent.Left = parent.Right
+  if grandparent.Left != nil {
+    grandparent.Left.Parent = grandparent
+  }
+  grandparent.HeightLeft = getHeight(grandparent.Left)
+  parent.Right = grandparent
+  parent.HeightRight = getHeight(parent.Right)
+  if grandparent.Parent != nil && grandparent.Parent.Left == grandparent {
+    grandparent.Parent.Left = parent
+  }
+  if grandparent.Parent != nil && grandparent.Parent.Right == grandparent {
+    grandparent.Parent.Right = parent
+  }
+  parent.Parent = grandparent.Parent
+  grandparent.Parent = parent
+  if parent.Parent == nil {
+    return parent
+  }
+  return rebalance(parent.Parent, parent, child)
 }
 
-func singleRotationToTheLeft(grandparent *Node, parent *Node, child *Node) {
-  
+func singleRotationToTheLeft(grandparent *Node, parent *Node, child *Node) *Node {
+  grandparent.Right = parent.Left
+  if grandparent.Right != nil {
+    grandparent.Right.Parent = grandparent
+  }
+  grandparent.HeightRight = getHeight(grandparent.Right)
+  parent.Left = grandparent
+  parent.HeightLeft = getHeight(parent.Left)
+  if grandparent.Parent != nil && grandparent.Parent.Left == grandparent {
+    grandparent.Parent.Left = parent
+  }
+  if grandparent.Parent != nil && grandparent.Parent.Right == grandparent {
+    grandparent.Parent.Right = parent
+  }
+  parent.Parent = grandparent.Parent
+  grandparent.Parent = parent
+  if parent.Parent == nil {
+    return parent
+  }
+  return rebalance(parent.Parent, parent, child)
 }
 
-func doubleRotationToTheRight(grandparent *Node, parent *Node, child *Node) {
-  
+func doubleRotationToTheRight(grandparent *Node, parent *Node, child *Node) *Node {
+  parent.Right = child.Left
+  if parent.Right != nil {
+    parent.Right.Parent = parent
+  }
+  parent.HeightRight = getHeight(parent.Right)
+  child.Left = parent
+  child.HeightLeft = getHeight(child.Left)
+  grandparent.Left = child.Right
+  if grandparent.Left != nil {
+    grandparent.Left.Parent = grandparent
+  }
+  grandparent.HeightLeft = getHeight(grandparent.Left)
+  child.Right = grandparent
+  child.HeightRight = getHeight(child.Right)
+  if grandparent.Parent != nil && grandparent.Parent.Left == grandparent {
+    grandparent.Parent.Left = child
+  }
+  if grandparent.Parent != nil && grandparent.Parent.Right == grandparent {
+    grandparent.Parent.Right = child
+  }
+  child.Parent = grandparent.Parent
+  parent.Parent = child
+  grandparent.Parent = child
+  if child.Parent == nil {
+    return child
+  }
+  return rebalance(child.Parent, child, parent)
 }
 
-func doubleRotationToTheLeft(grandparent *Node, parent *Node, child *Node) {
-  
+func doubleRotationToTheLeft(grandparent *Node, parent *Node, child *Node) *Node {
+  parent.Left = child.Right
+  if parent.Left != nil {
+    parent.Left.Parent = parent
+  }
+  parent.HeightLeft = getHeight(parent.Left)
+  child.Right = parent
+  child.HeightRight = getHeight(child.Right)
+  grandparent.Right = child.Left
+  if grandparent.Right != nil {
+    grandparent.Right.Parent = grandparent
+  }
+  grandparent.HeightRight = getHeight(grandparent.Right)
+  child.Left = grandparent
+  child.HeightLeft = getHeight(child.Left)
+  if grandparent.Parent != nil && grandparent.Parent.Left == grandparent {
+    grandparent.Parent.Left = child
+  }
+  if grandparent.Parent != nil && grandparent.Parent.Right == grandparent {
+    grandparent.Parent.Right = child
+  }
+  child.Parent = grandparent.Parent
+  parent.Parent = child
+  grandparent.Parent = child
+  if child.Parent == nil {
+    return child
+  }
+  return rebalance(child.Parent, child, parent)
 }
 
-func rebalance(node *Node, child *Node, grandchild *Node) {
+func rebalance(node *Node, child *Node, grandchild *Node) *Node {
   node.HeightLeft = getHeight(node.Left)
   node.HeightRight = getHeight(node.Right)
   balance := node.HeightRight - node.HeightLeft
   if balance < -1 || balance > 1 {
-    if child == nil {
-      fmt.Println(balance, node, child, grandchild)
-    }
     if child == node.Left && grandchild == child.Left {
-      singleRotationToTheRight(node, child, grandchild)
-      return
+      return singleRotationToTheRight(node, child, grandchild)
     } 
     if child == node.Left && grandchild == child.Right {
-      doubleRotationToTheRight(node, child, grandchild)
-      return
+      return doubleRotationToTheRight(node, child, grandchild)
     }
     if child == node.Right && grandchild == child.Left {
-      doubleRotationToTheLeft(node, child, grandchild)
-      return
+      return doubleRotationToTheLeft(node, child, grandchild)
     }
     if child == node.Right && grandchild == child.Right {
-      singleRotationToTheLeft(node, child, grandchild)
-      return
+      return singleRotationToTheLeft(node, child, grandchild)
     }
-    fmt.Println("ERROR", balance, node, child, grandchild)
+    fmt.Println("ERROR", balance, node, node.Left, node.Right)
   }
   if node.Parent == nil {
-    return
+    return node
   }
-  rebalance(node.Parent, node, child)
+  return rebalance(node.Parent, node, child)
 }
 
-func avlInsert(tree *Node, element string) *Node {
+func avlInsert(root *Node, tree *Node, element string) *Node {
   if tree == nil {
     return &Node{1, 0, 0, element, nil, nil, nil}
   }
   if element < tree.Item {
     if tree.Left == nil {
       tree.Left = &Node{1, 0, 0, element, nil, tree, nil}
-      rebalance(tree.Left, nil, nil)
-      return tree.Left
+      return rebalance(tree, tree.Left, nil)
     }
-    return avlInsert(tree.Left, element)
+    return avlInsert(root, tree.Left, element)
   }
   if element > tree.Item {
     if tree.Right == nil {
       tree.Right = &Node{1, 0, 0, element, nil, tree, nil}
-      rebalance(tree.Right, nil, nil)
-      return tree.Right
+      return rebalance(tree, tree.Right, nil)
     }
-    return avlInsert(tree.Right, element)
+    return avlInsert(root, tree.Right, element)
   }
   tree.Count++
-  return tree
+  return root
 }
 
 func insertList(text []string) (*Node, *Node) {
@@ -117,13 +196,13 @@ func insertList(text []string) (*Node, *Node) {
     return nil, nil
   }
   
-  unigram := avlInsert(nil, text[0])
-  avlInsert(unigram, text[1])
-  bigram := avlInsert(nil, text[0] + " " + text[1])
+  unigram := avlInsert(nil, nil, text[0])
+  unigram = avlInsert(unigram, unigram, text[1])
+  bigram := avlInsert(nil, nil, text[0] + " " + text[1])
   
   for idx := 2; idx < len(text); idx++ {
-    avlInsert(unigram, text[idx])
-    avlInsert(bigram, text[idx-1] + " " + text[idx])
+    unigram = avlInsert(unigram, unigram, text[idx])
+    bigram = avlInsert(bigram, bigram, text[idx-1] + " " + text[idx])
   }
   
   return unigram, bigram
